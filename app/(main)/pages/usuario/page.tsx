@@ -5,30 +5,23 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
-import { InputNumber, InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
-import { ProductService } from '../../../../demo/service/ProductService';
-import { Demo } from '@/types';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Projeto } from '@/types';
 import { UsuarioService } from '@/service/UsuarioService';
 
 /* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Crud = () => {
+const Usuario = () => {
     let usuarioVazio: Projeto.Usuario = {
-        id: null,
-        nome: '',
+        id:    '',
+         nome: '',
         login: '',
         senha: '',
         email: ''
     };
-
 
     const [usuarios, setUsuarios] = useState(null);
     const [usuarioDialog, setUsuarioDialog] = useState(false);
@@ -40,7 +33,7 @@ const Crud = () => {
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const usuarioService = new UsuarioService;
+    const usuarioService = useMemo(() => new UsuarioService(), []);
     
     useEffect(() => {
         usuarioService.getUsuarios().then((data) => setUsuarios(data as any));
@@ -52,7 +45,7 @@ const Crud = () => {
             .catch((error) => {
                 console.log(error);
             })
-    }, [usuarios]);
+    }, [usuarioService, usuarios]);
 
     const openNew = () => {
         setUsuario(usuarioVazio);
@@ -140,7 +133,7 @@ const Crud = () => {
     const deleteUsuario = () => {
         let _usuarios = (usuarios as any)?.filter((val: any) => val.id !== usuario.id);
 
-        usuarioService.excluir(usuario.id)
+        usuarioService.excluir(Number(usuario.id))
             .then((response) => {
                 setDeleteUsuarioDialog(false);
                 setUsuario(usuarioVazio);
@@ -177,16 +170,32 @@ const Crud = () => {
 
      const deleteSelectedUsuarios = () => {
         let _usuarios = (usuarios as any)?.filter((val: any) => !(selectedUsuarios as any)?.includes(val));
-         setUsuarios(_usuarios);
-         setDeleteUsuariosDialog(false);
-         setSelectedUsuarios(null);
-         toast.current?.show({
-             severity: 'success',
-             summary: 'Successful',
-             detail: 'Usuarios Excluidos!',
-             life: 3000
+        setUsuarios(_usuarios);
+        Promise.all(selectedUsuarios.map(async (_usuarios) =>{
+            await usuarioService.excluir(_usuarios.id);
+        })).then((response) => {
+            setDeleteUsuariosDialog(false);
+            setSelectedUsuarios(null);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Successful',
+                detail: 'Usuarios Excluidos!',
+                life: 3000
+             })
+
+         }).catch((error) => {
+            setUsuario(usuarioVazio);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error!',
+                detail: 'Ocorreu um erro ao Exluir Usuarios, verifique!',
+                life: 3000
+            });               
+     
          });
-     };
+ 
+ 
+    };
 
       const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, nome: string) => {
           const val = (e.target && e.target.value) || '';
@@ -290,7 +299,7 @@ const Crud = () => {
     );
 
     return (
-        <div className="grid crud-demo">
+        <div className="grid Usuario-demo">
             <div className="col-12">
                 <div className="card">
                     <Toast ref={toast} />
@@ -404,4 +413,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default Usuario;
