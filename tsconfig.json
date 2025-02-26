@@ -23,9 +23,6 @@
         "name": "next"
       }
     ],
-    "compilerOptions": {
-      "noImplicitAny": true
-    },
     "paths": {
       "@/*": [
         "./*"
@@ -40,6 +37,5 @@
   ],
   "exclude": [
     "node_modules"
-  ],
-  
+  ]
 }

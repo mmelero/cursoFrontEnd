@@ -9,7 +9,7 @@ import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Projeto } from '@/types';
 import { UsuarioService } from '@/service/UsuarioService';
 
@@ -23,29 +23,31 @@ const Usuario = () => {
         email: ''
     };
 
-    const [usuarios, setUsuarios] = useState(null);
+    const [usuarios, setUsuarios] = useState([]);
     const [usuarioDialog, setUsuarioDialog] = useState(false);
     const [deleteUsuarioDialog, setDeleteUsuarioDialog] = useState(false);
     const [deleteUsuariosDialog, setDeleteUsuariosDialog] = useState(false);
     const [usuario, setUsuario] = useState<Projeto.Usuario>(usuarioVazio);
-    const [selectedUsuarios, setSelectedUsuarios] = useState(null);
+    const [selectedUsuarios, setSelectedUsuarios] = useState<Projeto.Usuario[]>([]);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const usuarioService = useMemo(() => new UsuarioService(), []);
+    const usuarioService = new UsuarioService;
+    const [refreshKey, setRefreshKey] = useState(0);
     
     useEffect(() => {
-        usuarioService.getUsuarios().then((data) => setUsuarios(data as any));
+        
+       usuarioService.listarTodos()
 
-        usuarioService.listarTodos()
-            .then((response) => {
-                setUsuarios(response.data)
+             .then((response) => {
+                 setUsuarios(response.data)
+             })
+             .catch((error) => {
+                 console.log(error);
             })
-            .catch((error) => {
-                console.log(error);
-            })
-    }, [usuarioService, usuarios]);
+    },
+    [refreshKey]);
 
     const openNew = () => {
         setUsuario(usuarioVazio);
@@ -67,7 +69,7 @@ const Usuario = () => {
     };
 
     const saveUsuario = () => {
-        let _usuarios = (usuarios as any)?.filter((val: any) => val.id !== usuario.id);
+       let _usuarios = (usuarios as any)?.filter((val: any) => val.id !== usuario.id);
 
         setSubmitted(true);
         if(!usuario.id){
@@ -76,6 +78,7 @@ const Usuario = () => {
                     setUsuarioDialog(false);
                     setUsuario(usuarioVazio);
                     setUsuarios(_usuarios);
+                    setRefreshKey(oldKey => oldKey +1)
 
                     toast.current?.show({
                         severity: 'success',
@@ -100,8 +103,9 @@ const Usuario = () => {
             .then((response) => {
                 console.log(usuario);
                 setUsuarioDialog(false);
-                setUsuario(usuarioVazio);
-                toast.current?.show({
+                setUsuarios(_usuarios);
+                setRefreshKey(oldKey => oldKey +1)
+            toast.current?.show({
                     severity: 'success',
                     summary: 'Successful',
                     detail: 'Usuario Alterado com sucesso!',
@@ -175,7 +179,7 @@ const Usuario = () => {
             await usuarioService.excluir(_usuarios.id);
         })).then((response) => {
             setDeleteUsuariosDialog(false);
-            setSelectedUsuarios(null);
+            //setSelectedUsuarios(null);
             toast.current?.show({
                 severity: 'success',
                 summary: 'Successful',

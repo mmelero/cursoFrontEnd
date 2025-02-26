@@ -12,8 +12,12 @@ export default axiosInstance;
 export class UsuarioService{
 
     getUsuarios() {
-       return  axiosInstance.get('/usuario', { headers: { 'Cache-Control': 'no-cache' } })
-            .then((d) => d.data as Projeto.Usuario[]);
+   return fetch('http://localhost:8080/usuario', { headers: { 'Cache-Control': 'no-cache' } })
+              .then((res) => res.json())
+              .then((d) => d.data as Projeto.Usuario[]);
+
+    //    return  axiosInstance.get('/usuario', { headers: { 'Cache-Control': 'no-cache' } })
+    //         .then((d) => d.data as Projeto.Usuario[]);
     }
     
     listarTodos(){
