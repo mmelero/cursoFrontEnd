@@ -10,4 +10,20 @@ declare namespace Projeto{
             [key: string]: string | string[] | number | boolean | undefined
 
         };
+
+        type Recurso = {
+            
+            id:? number;
+            nome?: string;
+            chave?: string;
+            [key: string]: string | string[] | number | boolean | undefined
+
+        }
+        type Perfil = {
+            
+            id:? number;
+            descricao?: string;
+            [key: string]: string | string[] | number | boolean | undefined
+
+        }
 }
