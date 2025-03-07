@@ -26,4 +26,19 @@ declare namespace Projeto{
             [key: string]: string | string[] | number | boolean | undefined
 
         }
+        type perfilUsuario = {
+            
+            id:? number;
+            id_usuario?: Usuario;
+            id_perfil?: Perfil;
+            [key: string]: string | string[] | number | boolean | undefined
+
+        }
+
+        type PermissaoPerfilRecruso = {
+            id:? number;
+            perfil:? Perfil;
+            recurso:? Recurso; 
+        }
+
 }
